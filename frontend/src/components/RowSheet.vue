@@ -11,7 +11,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { inputKind } from "@/lib/columnKind"
+import { inputKind, isBlobColumn } from "@/lib/columnKind"
+import { markTyped, toggleNullMode } from "@/lib/formValues"
 import { useRowForm } from "@/lib/useRowForm"
 import { isBlob, type Column, type Row, type TableSchema } from "@/lib/types"
 
@@ -27,6 +28,14 @@ const title = computed(() => (props.row ? "Editar registro" : "Novo registro"))
 const blobSize = (c: Column): number | null => {
   const v = props.row?.values[c.name]
   return isBlob(v) ? v.$blob : null
+}
+// BLOB-declared columns (or a stored blob value) are never editable
+const isReadonlyBlob = (c: Column) => isBlobColumn(c) || blobSize(c) !== null
+const blobText = (c: Column) => {
+  const n = blobSize(c)
+  if (n !== null) return `<blob ${n} bytes>`
+  if (props.row && props.row.values[c.name] === null) return "NULL"
+  return ""
 }
 const isNull = (c: Column) => f.form.value[c.name]?.mode === "null"
 const isDisabled = (c: Column) => props.readOnly || isNull(c)
@@ -49,11 +58,11 @@ const inputMode = (c: Column) => {
 }
 function touch(c: Column) {
   const st = f.form.value[c.name]
-  if (st && st.mode !== "value") st.mode = "value"
+  if (st) f.form.value[c.name] = markTyped(st)
 }
 function toggleNull(c: Column) {
   const st = f.form.value[c.name]
-  if (st) st.mode = st.mode === "null" ? "value" : "null"
+  if (st) f.form.value[c.name] = toggleNullMode(st)
 }
 function setBool(c: Column, v: boolean | "indeterminate") {
   const st = f.form.value[c.name]
@@ -83,12 +92,12 @@ async function del() {
               {{ c.name }}
               <span class="text-muted-foreground text-xs">{{ c.type }}<template v-if="c.notNull"> · obrigatório</template><template v-if="c.pk"> · PK</template></span>
             </Label>
-            <Button v-if="!c.notNull && !readOnly && blobSize(c) === null" type="button" variant="ghost" size="sm"
+            <Button v-if="!c.notNull && !readOnly && !isReadonlyBlob(c)" type="button" variant="ghost" size="sm"
               :class="{ 'text-primary': isNull(c) }" :aria-pressed="isNull(c)" :aria-label="`Gravar ${c.name} como NULL`"
               @click="toggleNull(c)">NULL</Button>
           </div>
 
-          <p v-if="blobSize(c) !== null" :id="`f-${c.name}`" class="text-muted-foreground text-sm">&lt;blob {{ blobSize(c) }} bytes&gt; (não editável)</p>
+          <p v-if="isReadonlyBlob(c)" :id="`f-${c.name}`" class="text-muted-foreground text-sm">BLOB — não editável<template v-if="blobText(c)"> · {{ blobText(c) }}</template></p>
           <template v-else-if="f.form.value[c.name]">
             <div v-if="inputKind(c.type) === 'boolean'" class="flex items-center gap-2">
               <Checkbox :id="`f-${c.name}`" :model-value="f.form.value[c.name].bool" :disabled="isDisabled(c)"

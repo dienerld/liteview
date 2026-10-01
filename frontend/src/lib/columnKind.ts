@@ -10,3 +10,6 @@ export function inputKind(decl: string): InputKind {
   if (/TEXT|CLOB/.test(d)) return "textarea"
   return "text"
 }
+
+/** True when the DECLARED type contains BLOB (an empty declared type is not a BLOB column). */
+export const isBlobColumn = (c: { type: string }): boolean => c.type.toUpperCase().includes("BLOB")

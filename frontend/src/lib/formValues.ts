@@ -1,12 +1,12 @@
-import { inputKind } from "./columnKind"
+import { inputKind, isBlobColumn } from "./columnKind"
 import type { AppError } from "./errors"
 import { isBlob, type Column, type Row, type Values } from "./types"
 
 export type FieldMode = "value" | "null" | "default"
-export interface FieldState { mode: FieldMode; text: string; bool: boolean }
+export interface FieldState { mode: FieldMode; text: string; bool: boolean; prev?: FieldMode }
 export type FormState = Record<string, FieldState>
 
-const editable = (c: Column) => !c.generated
+const editable = (c: Column) => !c.generated && !isBlobColumn(c)
 
 export function initialState(cols: Column[], row: Row | null): FormState {
   const form: FormState = {}
@@ -45,6 +45,10 @@ export function toPayload(cols: Column[], form: FormState, original: Values | nu
     const st = form[c.name]
     if (!st) continue
     if (original && isBlob(original[c.name])) continue // blobs are never edited
+    if (original) {
+      const init = initialState([c], { key: {}, values: original })[c.name]
+      if (init && st.mode === init.mode && st.text === init.text && st.bool === init.bool) continue // untouched
+    }
     if (!original && st.mode === "default") continue
     let next: unknown
     if (st.mode === "null") next = null
@@ -69,4 +73,18 @@ export function splitErrors(err: AppError, cols: Column[]) {
     if (cols.some((c) => c.name === name)) fields[name] = err.message
   }
   return { fields, general: Object.keys(fields).length ? "" : err.message }
+}
+
+/** NULL toggle: remembers the previous mode and restores it when switched off. */
+export function toggleNullMode(st: FieldState): FieldState {
+  if (st.mode !== "null") return { ...st, mode: "null", prev: st.mode }
+  const { prev, ...rest } = st
+  return { ...rest, mode: prev ?? "value" }
+}
+
+/** User typed/changed the value: a NULL or default field becomes a real value. */
+export function markTyped(st: FieldState): FieldState {
+  if (st.mode === "value") return st
+  const { prev: _p, ...rest } = st
+  return { ...rest, mode: "value" }
 }

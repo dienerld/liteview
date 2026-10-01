@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { initialState, splitErrors, toPayload } from "./formValues";
+import { initialState, markTyped, splitErrors, toggleNullMode, toPayload } from "./formValues";
 import type { Column } from "./types";
 
 const col = (name: string, type: string, extra: Partial<Column> = {}): Column =>
@@ -89,5 +89,71 @@ describe("splitErrors", () => {
     const r = splitErrors({ message: "FK falhou", constraint: "FOREIGN KEY", columns: [] }, cols);
     expect(r.fields).toEqual({});
     expect(r.general).toBe("FK falhou");
+  });
+});
+
+describe("blob columns", () => {
+  const bc = [col("id", "INTEGER", { pk: 1 }), col("data", "BLOB"), col("raw", "")];
+  it("are absent from the insert form and payload even if forced", () => {
+    const f = initialState(bc, null);
+    expect("data" in f).toBe(false);
+    expect("raw" in f).toBe(true);
+    f.data = { mode: "value", text: "oops", bool: false };
+    expect(toPayload(bc, f, null).values).toEqual({});
+  });
+  it("are never sent in edit when NULL or blob", () => {
+    for (const v of [null, { $blob: 3 }]) {
+      const r = { key: { id: 1 }, values: { id: 1, data: v, raw: "x" } };
+      const f = initialState(bc, r);
+      expect("data" in f).toBe(false);
+      f.data = { mode: "value", text: "oops", bool: false };
+      expect(toPayload(bc, f, r.values).values).toEqual({});
+    }
+  });
+  it("never sends a blob value held by a non-BLOB column", () => {
+    const r = { key: { id: 1 }, values: { id: 1, raw: { $blob: 2 } } };
+    const f = initialState(bc, r);
+    f.raw = { mode: "value", text: "x", bool: false };
+    expect(toPayload(bc, f, r.values).values).toEqual({});
+  });
+});
+
+describe("untouched fields in edit", () => {
+  const c2 = [col("id", "INTEGER", { pk: 1 }), col("name", "TEXT"), col("n", "INTEGER"), col("ok", "BOOLEAN")];
+  const row = { key: { id: 1 }, values: { id: 1, name: "a", n: 1.5, ok: 2 } };
+  it("does not validate or send untouched weird values", () => {
+    const f = initialState(c2, row);
+    f.name.text = "b";
+    expect(toPayload(c2, f, row.values)).toEqual({ values: { name: "b" }, errors: {} });
+  });
+  it("still allows fixing the weird integer column", () => {
+    const f = initialState(c2, row);
+    f.n.text = "7";
+    expect(toPayload(c2, f, row.values).values).toEqual({ n: 7 });
+  });
+  it("still errors on invalid touched numeric text", () => {
+    const f = initialState(c2, row);
+    f.n.text = "abc";
+    expect(Object.keys(toPayload(c2, f, row.values).errors)).toEqual(["n"]);
+  });
+});
+
+describe("toggleNullMode", () => {
+  it("default -> null -> default", () => {
+    const a = toggleNullMode({ mode: "default", text: "", bool: false });
+    expect(a.mode).toBe("null");
+    expect(toggleNullMode(a)).toEqual({ mode: "default", text: "", bool: false });
+  });
+  it("value keeps its text", () => {
+    const b = toggleNullMode(toggleNullMode({ mode: "value", text: "x", bool: false }));
+    expect(b).toEqual({ mode: "value", text: "x", bool: false });
+  });
+  it("edit-mode value -> null -> value", () => {
+    const f = initialState(cols, { key: { id: 1 }, values: { id: 1, name: "Ana", age: 1, score: 1, ok: 0 } });
+    expect(toggleNullMode(toggleNullMode(f.name)).mode).toBe("value");
+  });
+  it("typing into a null field switches to value", () => {
+    const st = toggleNullMode({ mode: "default", text: "", bool: false });
+    expect(markTyped(st).mode).toBe("value");
   });
 });
