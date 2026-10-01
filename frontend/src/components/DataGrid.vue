@@ -3,7 +3,7 @@ import { computed, h } from "vue"
 import { FlexRender, getCoreRowModel, useVueTable, type ColumnDef } from "@tanstack/vue-table"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import CellValue from "./CellValue.vue"
-import { fkForColumn } from "@/lib/fk"
+import { fkForColumn, fkTitle, isPkColumn } from "@/lib/fk"
 import type { ForeignKey, Row, TableSchema } from "@/lib/types"
 
 const props = defineProps<{ schema: TableSchema; rows: Row[]; orderBy: string; desc: boolean }>()
@@ -11,16 +11,27 @@ const emit = defineEmits<{ sort: [column: string]; select: [row: Row]; follow: [
 
 const schemaColumns = computed(() => props.schema.columns ?? [])
 
+// Small "PK"/"FK" tag next to the column name; the tooltip says what it means.
+const mark = (text: string, title: string, tone: string) =>
+  h("span", { title, class: `rounded px-1 text-[10px] leading-4 font-semibold ${tone}` }, text)
+
 const columns = computed<ColumnDef<Row>[]>(() =>
   schemaColumns.value.map((c) => ({
     id: c.name,
     accessorFn: (r) => r.values[c.name],
-    header: () =>
-      h(
+    header: () => {
+      const fk = fkForColumn(props.schema.foreignKeys, c.name)
+      return h(
         "button",
         { type: "button", class: "flex items-center gap-1 font-medium", onClick: () => emit("sort", c.name) },
-        [c.name, props.orderBy === c.name ? (props.desc ? " ↓" : " ↑") : ""],
-      ),
+        [
+          c.name,
+          isPkColumn(props.schema.primaryKey, c.name) ? mark("PK", "Chave primária", "bg-primary/15 text-primary") : null,
+          fk ? mark("FK", fkTitle(fk, c.name), "bg-muted text-muted-foreground") : null,
+          props.orderBy === c.name ? (props.desc ? " ↓" : " ↑") : "",
+        ],
+      )
+    },
     cell: ({ row }) =>
       h(CellValue, {
         value: row.original.values[c.name],

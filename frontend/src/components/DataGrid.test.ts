@@ -64,4 +64,28 @@ describe("DataGrid accessibility and events", () => {
     expect(attr(mountGrid("user_id", false))).toEqual(["none", "ascending"])
     expect(attr(mountGrid("id", true))).toEqual(["descending", "none"])
   })
+  it("marks primary key and foreign key columns in the header", () => {
+    const heads = mountGrid().findAll("thead th")
+    expect(heads[0].text()).toContain("PK")
+    expect(heads[0].text()).not.toContain("FK")
+    expect(heads[1].text()).toContain("FK")
+    expect(heads[1].text()).not.toContain("PK")
+    expect(heads[1].find("[title]").attributes("title")).toBe("Chave estrangeira → users.id")
+    expect(heads[0].find("[title]").attributes("title")).toBe("Chave primária")
+  })
+  it("shows both marks on a column that is a PK and an FK", () => {
+    const both: TableSchema = {
+      ...schema,
+      columns: [col("user_id")], primaryKey: ["user_id"], keyColumns: ["user_id"],
+    }
+    const w = mount(DataGrid, { props: { schema: both, rows: [], orderBy: "", desc: false } })
+    const t = w.find("thead th").text()
+    expect(t).toContain("PK")
+    expect(t).toContain("FK")
+  })
+  it("clicking a mark still sorts the column", async () => {
+    const w = mountGrid()
+    await w.find("thead [title]").trigger("click")
+    expect(w.emitted("sort")).toEqual([["id"]])
+  })
 })
