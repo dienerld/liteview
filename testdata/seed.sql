@@ -1,0 +1,16 @@
+PRAGMA foreign_keys = ON;
+CREATE TABLE users (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, name TEXT, active INTEGER DEFAULT 1, created DATETIME DEFAULT CURRENT_TIMESTAMP, manager_id INTEGER REFERENCES users(id));
+CREATE TABLE posts (id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id), title TEXT DEFAULT 'untitled', body TEXT);
+CREATE TABLE tags (a INTEGER, b INTEGER, label TEXT, PRIMARY KEY (a, b)) WITHOUT ROWID;
+CREATE TABLE tag_notes (id INTEGER PRIMARY KEY, a INTEGER, b INTEGER, FOREIGN KEY (a, b) REFERENCES tags(a, b));
+CREATE TABLE log (msg TEXT);
+CREATE TABLE "we""ird name" ("select" TEXT PRIMARY KEY, "my col" INTEGER);
+CREATE TABLE blobs (id INTEGER PRIMARY KEY, data BLOB, big INTEGER);
+CREATE VIEW v_posts AS SELECT p.id, p.title, u.email FROM posts p JOIN users u ON u.id = p.user_id;
+INSERT INTO users (email, name, manager_id) VALUES ('ana@x.com','Ana',NULL), ('bruno@x.com','Bruno',1), ('carla@x.com','Carla',1);
+INSERT INTO posts (user_id, title, body) VALUES (1,'Primeiro','texto longo...'), (1,'Segundo',NULL), (2,'Do Bruno',''), (3,'Da Carla','x');
+INSERT INTO tags VALUES (1,1,'a'), (1,2,'b');
+INSERT INTO tag_notes (a,b) VALUES (1,1);
+INSERT INTO log VALUES ('hello'), ('world');
+INSERT INTO "we""ird name" VALUES ('k1', 10), ('k2', NULL);
+INSERT INTO blobs (data, big) VALUES (x'DEADBEEF', 9007199254740993);
