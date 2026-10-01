@@ -45,3 +45,7 @@ cd frontend && npm test
 - `internal/viewer`: o único service do Wails; seus métodos públicos viram os bindings do frontend.
 - `frontend/`: Vue 3 + TypeScript; `src/lib/api.ts` é o único arquivo que importa os bindings gerados.
 - `docs/superpowers/`: spec e plano de implementação.
+
+## Licença
+
+[MIT](LICENSE)
