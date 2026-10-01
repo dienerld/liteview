@@ -35,8 +35,11 @@ func (s *Store) load() []string {
 	if err != nil {
 		return []string{}
 	}
-	var list []string
+	list := []string{}
 	if err := json.Unmarshal(b, &list); err != nil {
+		return []string{}
+	}
+	if list == nil {
 		return []string{}
 	}
 	return list
