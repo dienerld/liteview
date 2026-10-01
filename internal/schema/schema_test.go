@@ -1,6 +1,7 @@
 package schema_test
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -18,6 +19,8 @@ CREATE TABLE implicit_child (id INTEGER PRIMARY KEY, user_id INTEGER REFERENCES 
 CREATE TABLE "we""ird name" ("select" TEXT, "my col" INTEGER, PRIMARY KEY ("select"));
 CREATE TABLE gen (a INTEGER, b INTEGER GENERATED ALWAYS AS (a * 2) VIRTUAL);
 CREATE TABLE auto (id INTEGER PRIMARY KEY AUTOINCREMENT);
+CREATE TABLE fk_broken (id INTEGER PRIMARY KEY, broken_ref INTEGER REFERENCES nonexistent);
+CREATE TABLE reordered_order (y INTEGER, x INTEGER, FOREIGN KEY (y, x) REFERENCES tags(b, a));
 CREATE VIEW v_posts AS SELECT id, title FROM posts;
 `
 
@@ -39,6 +42,20 @@ func TestListTables(t *testing.T) {
 	}
 	if got[len(got)-1].Name != "v_posts" {
 		t.Fatalf("views must come after tables, got last = %s", got[len(got)-1].Name)
+	}
+}
+
+func TestListTables_emptyDatabaseReturnsNonNilSlice(t *testing.T) {
+	db := testdb.New(t, "")
+	got, err := schema.ListTables(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got == nil {
+		t.Fatal("empty ListTables must return non-nil empty slice, not nil")
+	}
+	if len(got) != 0 {
+		t.Fatalf("expected empty slice, got %d items", len(got))
 	}
 }
 
@@ -124,7 +141,10 @@ func TestGetTable_foreignKeysOutAndIn(t *testing.T) {
 		t.Fatal(err)
 	}
 	// self reference goes out and comes in
-	if len(s.ForeignKeys) != 1 || s.ForeignKeys[0].Table != "users" {
+	if len(s.ForeignKeys) != 1 {
+		t.Fatalf("expected 1 outgoing FK, got %d: %+v", len(s.ForeignKeys), s.ForeignKeys)
+	}
+	if s.ForeignKeys[0].Table != "users" {
 		t.Fatalf("outgoing wrong: %+v", s.ForeignKeys)
 	}
 	in := map[string]schema.IncomingFK{}
@@ -145,11 +165,17 @@ func TestGetTable_implicitFKTargetResolvesToPK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(s.ForeignKeys) != 1 {
+		t.Fatalf("expected 1 FK, got %d", len(s.ForeignKeys))
+	}
 	fk := s.ForeignKeys[0]
 	if fk.Table != "users" || !reflect.DeepEqual(fk.To, []string{"id"}) {
 		t.Fatalf("implicit target not resolved: %+v", fk)
 	}
-	users, _ := schema.GetTable(db, "users")
+	users, err := schema.GetTable(db, "users")
+	if err != nil {
+		t.Fatal(err)
+	}
 	found := false
 	for _, f := range users.Incoming {
 		if f.Table == "implicit_child" && reflect.DeepEqual(f.To, []string{"id"}) {
@@ -167,6 +193,9 @@ func TestGetTable_compositeFK(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(s.ForeignKeys) != 1 {
+		t.Fatalf("expected 1 FK, got %d", len(s.ForeignKeys))
+	}
 	fk := s.ForeignKeys[0]
 	if !reflect.DeepEqual(fk.From, []string{"a", "b"}) || !reflect.DeepEqual(fk.To, []string{"a", "b"}) {
 		t.Fatalf("composite FK wrong: %+v", fk)
@@ -177,5 +206,134 @@ func TestGetTable_unknown(t *testing.T) {
 	db := testdb.New(t, fixture)
 	if _, err := schema.GetTable(db, "nope"); err == nil {
 		t.Fatal("expected error for unknown table")
+	}
+}
+
+// Finding 1: JSON serialization - nil slices must become empty, not null
+func TestGetTable_noForeignKeysSerializesNonNull(t *testing.T) {
+	db := testdb.New(t, fixture)
+	s, err := schema.GetTable(db, "log")
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := json.Marshal(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var m map[string]interface{}
+	if err := json.Unmarshal(data, &m); err != nil {
+		t.Fatal(err)
+	}
+
+	// These fields must not be null
+	checkNotNull := []string{"columns", "primaryKey", "keyColumns", "foreignKeys", "incoming"}
+	for _, field := range checkNotNull {
+		if m[field] == nil {
+			t.Fatalf("field %q must not be null in JSON, got: %s", field, data)
+		}
+		if v, ok := m[field].([]interface{}); !ok || v == nil {
+			t.Fatalf("field %q must be a non-nil array in JSON, got: %v", field, m[field])
+		}
+	}
+}
+
+func TestGetTable_viewSerializesEmptyKeyColumns(t *testing.T) {
+	db := testdb.New(t, fixture)
+	s, err := schema.GetTable(db, "v_posts")
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := json.Marshal(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var m map[string]interface{}
+	if err := json.Unmarshal(data, &m); err != nil {
+		t.Fatal(err)
+	}
+
+	// keyColumns should be non-nil empty array, not null
+	if m["keyColumns"] == nil {
+		t.Fatalf("keyColumns must not be null for view, got: %s", data)
+	}
+	keyColumns, ok := m["keyColumns"].([]interface{})
+	if !ok || keyColumns == nil {
+		t.Fatalf("keyColumns must be a non-nil array for view, got: %v", m["keyColumns"])
+	}
+	if len(keyColumns) != 0 {
+		t.Fatalf("view should have empty keyColumns, got %d items", len(keyColumns))
+	}
+}
+
+// Finding 3a: FK referencing non-existent table
+func TestGetTable_fkReferencingNonexistentTable(t *testing.T) {
+	db := testdb.New(t, fixture)
+	s, err := schema.GetTable(db, "fk_broken")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(s.ForeignKeys) != 1 {
+		t.Fatalf("expected 1 FK, got %d", len(s.ForeignKeys))
+	}
+	fk := s.ForeignKeys[0]
+	if fk.Table != "nonexistent" {
+		t.Fatalf("FK table should be 'nonexistent', got %q", fk.Table)
+	}
+	// To should stay as [""] when target doesn't exist
+	if !reflect.DeepEqual(fk.To, []string{""}) {
+		t.Fatalf("FK to should be [\"\"], got %+v", fk.To)
+	}
+}
+
+// Finding 3b: Composite FK with reordered columns
+func TestGetTable_compositeFKReordered(t *testing.T) {
+	db := testdb.New(t, fixture)
+	s, err := schema.GetTable(db, "reordered_order")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(s.ForeignKeys) != 1 {
+		t.Fatalf("expected 1 FK, got %d", len(s.ForeignKeys))
+	}
+	fk := s.ForeignKeys[0]
+	if fk.Table != "tags" {
+		t.Fatalf("FK table should be 'tags', got %q", fk.Table)
+	}
+	// From should be (y, x) in order as they appear in reordered_order
+	if !reflect.DeepEqual(fk.From, []string{"y", "x"}) {
+		t.Fatalf("FK from should be [y x], got %+v", fk.From)
+	}
+	// To should be (b, a) as they appear in the REFERENCES clause
+	if !reflect.DeepEqual(fk.To, []string{"b", "a"}) {
+		t.Fatalf("FK to should be [b a], got %+v", fk.To)
+	}
+}
+
+// Finding 3c: Composite incoming FK from parent side
+func TestGetTable_compositeIncomingFK(t *testing.T) {
+	db := testdb.New(t, fixture)
+	s, err := schema.GetTable(db, "tags")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Find incoming from tag_notes
+	found := false
+	var incoming schema.IncomingFK
+	for _, f := range s.Incoming {
+		if f.Table == "tag_notes" {
+			found = true
+			incoming = f
+			break
+		}
+	}
+	if !found {
+		t.Fatal("expected incoming FK from tag_notes to tags")
+	}
+	if !reflect.DeepEqual(incoming.From, []string{"a", "b"}) {
+		t.Fatalf("incoming from should be [a b], got %+v", incoming.From)
+	}
+	if !reflect.DeepEqual(incoming.To, []string{"a", "b"}) {
+		t.Fatalf("incoming to should be [a b], got %+v", incoming.To)
 	}
 }

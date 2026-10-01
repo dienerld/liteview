@@ -56,7 +56,7 @@ func ListTables(db *sql.DB) ([]TableInfo, error) {
 		return nil, err
 	}
 	defer rs.Close()
-	var out []TableInfo
+	out := []TableInfo{} // Initialize to non-nil empty slice
 	for rs.Next() {
 		var ti TableInfo
 		if err := rs.Scan(&ti.Name, &ti.Kind); err != nil {
@@ -82,7 +82,19 @@ func GetTable(db *sql.DB, name string) (*TableSchema, error) {
 	if err != nil {
 		return nil, err
 	}
-	s := &TableSchema{Name: name, Kind: kind, Columns: cols}
+	// Initialize all slices to non-nil empty slices
+	if cols == nil {
+		cols = []Column{}
+	}
+	s := &TableSchema{
+		Name:        name,
+		Kind:        kind,
+		Columns:     cols,
+		PrimaryKey:  []string{},
+		KeyColumns:  []string{},
+		ForeignKeys: []ForeignKey{},
+		Incoming:    []IncomingFK{},
+	}
 
 	type pkCol struct {
 		pos  int
@@ -123,8 +135,14 @@ func GetTable(db *sql.DB, name string) (*TableSchema, error) {
 	if s.ForeignKeys, err = foreignKeys(db, name); err != nil {
 		return nil, err
 	}
+	if s.ForeignKeys == nil {
+		s.ForeignKeys = []ForeignKey{}
+	}
 	if s.Incoming, err = incoming(db, name); err != nil {
 		return nil, err
+	}
+	if s.Incoming == nil {
+		s.Incoming = []IncomingFK{}
 	}
 	return s, nil
 }
@@ -135,7 +153,7 @@ func columns(db *sql.DB, table string) ([]Column, error) {
 		return nil, err
 	}
 	defer rs.Close()
-	var out []Column
+	out := []Column{} // Initialize to non-nil empty slice
 	for rs.Next() {
 		var c Column
 		var dflt sql.NullString
@@ -163,7 +181,7 @@ func primaryKey(db *sql.DB, table string) ([]string, error) {
 		return nil, err
 	}
 	defer rs.Close()
-	var out []string
+	out := []string{} // Initialize to non-nil empty slice
 	for rs.Next() {
 		var n string
 		if err := rs.Scan(&n); err != nil {
@@ -182,7 +200,7 @@ func foreignKeys(db *sql.DB, table string) ([]ForeignKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	var fks []ForeignKey
+	fks := []ForeignKey{} // Initialize to non-nil empty slice
 	byID := map[int]int{}
 	for rs.Next() {
 		var id int
@@ -194,7 +212,13 @@ func foreignKeys(db *sql.DB, table string) ([]ForeignKey, error) {
 		}
 		i, ok := byID[id]
 		if !ok {
-			fks = append(fks, ForeignKey{Table: ref, OnUpdate: onU, OnDelete: onD})
+			fks = append(fks, ForeignKey{
+				Table:    ref,
+				From:     []string{},
+				To:       []string{},
+				OnUpdate: onU,
+				OnDelete: onD,
+			})
 			i = len(fks) - 1
 			byID[id] = i
 		}
@@ -214,7 +238,8 @@ func foreignKeys(db *sql.DB, table string) ([]ForeignKey, error) {
 			}
 			pk, err := primaryKey(db, fks[i].Table)
 			if err != nil {
-				return nil, err
+				// If the target table doesn't exist, leave the To[j] as ""
+				continue
 			}
 			if j < len(pk) {
 				fks[i].To[j] = pk[j]
@@ -229,7 +254,7 @@ func incoming(db *sql.DB, name string) ([]IncomingFK, error) {
 	if err != nil {
 		return nil, err
 	}
-	var out []IncomingFK
+	out := []IncomingFK{} // Initialize to non-nil empty slice
 	for _, ti := range tables {
 		if ti.Kind != "table" {
 			continue
@@ -240,7 +265,19 @@ func incoming(db *sql.DB, name string) ([]IncomingFK, error) {
 		}
 		for _, fk := range fks {
 			if strings.EqualFold(fk.Table, name) {
-				out = append(out, IncomingFK{Table: ti.Name, From: fk.From, To: fk.To})
+				incoming := IncomingFK{
+					Table: ti.Name,
+					From:  fk.From,
+					To:    fk.To,
+				}
+				// Ensure slices are non-nil
+				if incoming.From == nil {
+					incoming.From = []string{}
+				}
+				if incoming.To == nil {
+					incoming.To = []string{}
+				}
+				out = append(out, incoming)
 			}
 		}
 	}
