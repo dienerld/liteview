@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from "vue"
+import { computed, onBeforeUnmount, ref, toRaw, watch } from "vue"
 import { toast } from "vue-sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import DataGrid from "./DataGrid.vue"
+import RowSheet from "./RowSheet.vue"
 import { api } from "@/lib/api"
 import { toAppError } from "@/lib/errors"
 import { outgoingTarget, type NavEntry } from "@/lib/nav"
@@ -20,16 +21,17 @@ const pageNo = ref(1)
 const orderBy = ref("")
 const desc = ref(false)
 const filter = ref("")
-const selected = ref<Row | null>(null) // consumed by the row sheet (Task 12)
-const sheetOpen = ref(false) // row sheet visibility (Task 12)
+const selected = ref<Row | null>(null) // snapshot copy edited by the row sheet
+const sheetOpen = ref(false)
 const loading = ref(false)
 
 const rows = computed(() => page.value?.rows ?? [])
 const pages = computed(() => Math.max(1, Math.ceil((page.value?.total ?? 0) / pageSize)))
+const readOnly = computed(() => !!schema.value?.readOnly || !!store.db?.readOnly)
 
 let requestId = 0
 let appliedFilter = "" // filter value used by the latest load; avoids redundant debounced reloads
-async function load() {
+async function load(clamped = false) {
   const id = ++requestId
   appliedFilter = filter.value
   loading.value = true
@@ -44,6 +46,12 @@ async function load() {
     if (id !== requestId) return // a newer load superseded this one
     schema.value = sch
     page.value = result
+    const last = Math.max(1, Math.ceil(result.total / pageSize))
+    if (!clamped && pageNo.value > last) { // e.g. deleted the last row of the last page
+      pageNo.value = last
+      await load(true)
+      return
+    }
   } catch (e) {
     if (id === requestId) toast.error(toAppError(e).message)
   } finally {
@@ -84,7 +92,7 @@ function go(n: number) {
   load()
 }
 function select(row: Row) {
-  selected.value = row
+  selected.value = structuredClone(toRaw(row))
   sheetOpen.value = true
 }
 function create() {
@@ -93,7 +101,7 @@ function create() {
 }
 function follow(fk: ForeignKey, row: Row) { store.follow(outgoingTarget(fk, row.values)) }
 
-defineExpose({ reload: load, selected, sheetOpen })
+defineExpose({ reload: () => load(), selected, sheetOpen })
 </script>
 
 <template>
@@ -105,11 +113,13 @@ defineExpose({ reload: load, selected, sheetOpen })
       <Button size="sm" variant="outline" :disabled="pageNo <= 1" aria-label="Página anterior" @click="go(pageNo - 1)">‹</Button>
       <span class="text-sm">{{ pageNo }} / {{ pages }}</span>
       <Button size="sm" variant="outline" :disabled="pageNo >= pages" aria-label="Próxima página" @click="go(pageNo + 1)">›</Button>
-      <Button v-if="!schema.readOnly && !store.db?.readOnly" size="sm" @click="create">Novo</Button>
+      <Button v-if="!readOnly" size="sm" @click="create">Novo</Button>
     </div>
     <div class="min-h-0 flex-1 overflow-auto" :class="{ 'opacity-60': loading }">
       <DataGrid :schema="schema" :rows="rows" :order-by="orderBy" :desc="desc"
         @sort="sort" @select="select" @follow="follow" />
     </div>
+    <RowSheet v-model:open="sheetOpen" :table="schema" :row="selected" :read-only="readOnly"
+      @saved="load()" @deleted="load()" />
   </div>
 </template>

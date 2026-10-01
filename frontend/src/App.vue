@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner"
 import AppSidebar from "@/components/AppSidebar.vue"
 import EmptyState from "@/components/EmptyState.vue"
 import DataTab from "@/components/DataTab.vue"
+import StructureTab from "@/components/StructureTab.vue"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useViewer } from "@/stores/viewer"
@@ -36,10 +37,12 @@ onMounted(() => store.init())
               <TabsTrigger value="data">Dados</TabsTrigger>
               <TabsTrigger value="structure">Estrutura</TabsTrigger>
             </TabsList>
-            <TabsContent value="data" class="min-h-0 flex-1">
+            <TabsContent value="data" force-mount class="min-h-0 flex-1 data-[state=inactive]:hidden">
               <DataTab :key="store.trail.length + store.current.label" :entry="store.current" />
             </TabsContent>
-            <TabsContent value="structure" class="min-h-0 flex-1 overflow-auto">Estrutura (Task 12)</TabsContent>
+            <TabsContent value="structure" class="min-h-0 flex-1 overflow-auto">
+              <StructureTab :table="store.current.table" />
+            </TabsContent>
           </Tabs>
         </template>
       </main>
