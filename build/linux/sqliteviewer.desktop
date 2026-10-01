@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=sqliteviewer
+Exec=sqliteviewer
+Icon=sqliteviewer
+Categories=Development;
+Terminal=false
+Keywords=wails
+Version=1.0
+StartupNotify=false
