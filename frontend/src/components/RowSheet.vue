@@ -12,7 +12,10 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { inputKind, isBlobColumn } from "@/lib/columnKind"
+import FkCombobox from "@/components/FkCombobox.vue"
+import ReferencedBy from "@/components/ReferencedBy.vue"
 import { markTyped, toggleNullMode } from "@/lib/formValues"
+import { singleColumnFk } from "@/lib/fkOptions"
 import { useRowForm } from "@/lib/useRowForm"
 import { isBlob, type Column, type Row, type TableSchema } from "@/lib/types"
 
@@ -64,6 +67,12 @@ function toggleNull(c: Column) {
   const st = f.form.value[c.name]
   if (st) f.form.value[c.name] = toggleNullMode(st)
 }
+const singleFk = (c: Column) => singleColumnFk(props.table.foreignKeys, c.name)
+function setFk(c: Column, v: string) {
+  const st = f.form.value[c.name]
+  if (!st) return
+  f.form.value[c.name] = markTyped({ ...st, text: v })
+}
 function setBool(c: Column, v: boolean | "indeterminate") {
   const st = f.form.value[c.name]
   if (!st) return
@@ -99,7 +108,11 @@ async function del() {
 
           <p v-if="isReadonlyBlob(c)" :id="`f-${c.name}`" class="text-muted-foreground text-sm">BLOB — não editável<template v-if="blobText(c)"> · {{ blobText(c) }}</template></p>
           <template v-else-if="f.form.value[c.name]">
-            <div v-if="inputKind(c.type) === 'boolean'" class="flex items-center gap-2">
+            <FkCombobox v-if="singleFk(c) && !isNull(c)" :id="`f-${c.name}`" :fk="singleFk(c)!"
+              :model-value="f.form.value[c.name].text" :disabled="readOnly"
+              :invalid="!!f.fieldErrors.value[c.name]" :describedby="describedBy(c)"
+              @update:model-value="setFk(c, $event)" />
+            <div v-else-if="inputKind(c.type) === 'boolean'" class="flex items-center gap-2">
               <Checkbox :id="`f-${c.name}`" :model-value="f.form.value[c.name].bool" :disabled="isDisabled(c)"
                 :aria-invalid="invalid(c)" :aria-describedby="describedBy(c)"
                 @update:model-value="setBool(c, $event)" />
@@ -116,7 +129,8 @@ async function del() {
         </div>
 
         <p v-if="f.generalError.value" class="text-destructive text-sm" role="alert">{{ f.generalError.value }}</p>
-        <slot name="extra" />
+        <ReferencedBy v-if="row && table.incoming?.length" :table="table.name" :row="row" :incoming="table.incoming"
+          @navigate="emit('update:open', false)" />
       </form>
 
       <SheetFooter class="flex-row justify-between border-t p-4">
