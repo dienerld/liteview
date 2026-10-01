@@ -128,6 +128,34 @@ func buildWhere(s *schema.TableSchema, q Query) (string, []any, error) {
 	return " WHERE " + strings.Join(parts, " AND "), args, nil
 }
 
+// buildOrder returns the ORDER BY clause. The key (rowid or primary key
+// columns) is always appended as a tie-breaker so pagination is stable; with no
+// OrderBy it is the whole ordering. Views have no key and stay unordered.
+func buildOrder(s *schema.TableSchema, q Query) (string, error) {
+	var terms []string
+	if q.OrderBy != "" {
+		if !hasColumn(s, q.OrderBy) {
+			return "", fmt.Errorf("coluna desconhecida: %q", q.OrderBy)
+		}
+		term := quote(q.OrderBy)
+		if q.Desc {
+			term += " DESC"
+		}
+		terms = append(terms, term)
+	}
+	if s.UsesRowID {
+		terms = append(terms, "rowid")
+	} else {
+		for _, k := range s.KeyColumns {
+			terms = append(terms, quote(k))
+		}
+	}
+	if len(terms) == 0 {
+		return "", nil
+	}
+	return " ORDER BY " + strings.Join(terms, ", "), nil
+}
+
 // Select reads one page of rows with optional ordering, filter and exact conditions.
 func Select(db *sql.DB, s *schema.TableSchema, q Query) (*Page, error) {
 	size := q.PageSize
@@ -160,23 +188,9 @@ func Select(db *sql.DB, s *schema.TableSchema, q Query) (*Page, error) {
 		exprs = append(exprs, `rowid AS "__rowid__"`)
 	}
 
-	order := ""
-	if q.OrderBy != "" {
-		if !hasColumn(s, q.OrderBy) {
-			return nil, fmt.Errorf("coluna desconhecida: %q", q.OrderBy)
-		}
-		order = " ORDER BY " + quote(q.OrderBy)
-		if q.Desc {
-			order += " DESC"
-		}
-		// tie-breaker keeps pagination stable
-		for _, k := range s.KeyColumns {
-			if s.UsesRowID {
-				order += ", rowid"
-			} else {
-				order += ", " + quote(k)
-			}
-		}
+	order, err := buildOrder(s, q)
+	if err != nil {
+		return nil, err
 	}
 
 	query := "SELECT " + strings.Join(exprs, ", ") + " FROM " + quote(s.Name) + where + order + " LIMIT ? OFFSET ?"
