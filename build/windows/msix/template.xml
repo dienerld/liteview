@@ -10,13 +10,13 @@
     <Installer
         Path="sqliteviewer"
         Arguments=""
-        InstallLocation="C:\Program Files\My Company\My Product">
+        InstallLocation="C:\Program Files\sqliteviewer\SQLite Viewer">
     </Installer>
     <PackageInformation
-        PackageName="My Product"
-        PackageDisplayName="My Product"
-        PublisherName="CN=My Company"
-        PublisherDisplayName="My Company"
+        PackageName="SQLite Viewer"
+        PackageDisplayName="SQLite Viewer"
+        PublisherName="CN=sqliteviewer"
+        PublisherDisplayName="sqliteviewer"
         Version="0.1.0.0"
         PackageDescription="A sqliteviewer application">
         <Capabilities>
@@ -27,7 +27,7 @@
             <Application
                 Id="com.example.sqliteviewer"
                 Description="A sqliteviewer application"
-                DisplayName="My Product"
+                DisplayName="SQLite Viewer"
                 ExecutableName="sqliteviewer"
                 EntryPoint="Windows.FullTrustApplication">
                 
@@ -41,8 +41,8 @@
         </Dependencies>
         <Properties>
             <Framework>false</Framework>
-            <DisplayName>My Product</DisplayName>
-            <PublisherDisplayName>My Company</PublisherDisplayName>
+            <DisplayName>SQLite Viewer</DisplayName>
+            <PublisherDisplayName>sqliteviewer</PublisherDisplayName>
             <Description>A sqliteviewer application</Description>
             <Logo>Assets\AppIcon.png</Logo>
         </Properties>

@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	_ "modernc.org/sqlite"
 
 	"log"
 	"time"

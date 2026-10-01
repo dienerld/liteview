@@ -9,13 +9,13 @@
   
   <Identity 
     Name="com.example.sqliteviewer"
-    Publisher="CN=My Company"
+    Publisher="CN=sqliteviewer"
     Version="0.1.0.0" 
     ProcessorArchitecture="x64" />
   
   <Properties>
-    <DisplayName>My Product</DisplayName>
-    <PublisherDisplayName>My Company</PublisherDisplayName>
+    <DisplayName>SQLite Viewer</DisplayName>
+    <PublisherDisplayName>sqliteviewer</PublisherDisplayName>
     <Description>A sqliteviewer application</Description>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -31,7 +31,7 @@
   <Applications>
     <Application Id="com.example.sqliteviewer" Executable="sqliteviewer" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
-        DisplayName="My Product"
+        DisplayName="SQLite Viewer"
         Description="A sqliteviewer application"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
