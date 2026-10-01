@@ -12,7 +12,7 @@ priority: "extra"
 maintainer: ${GIT_COMMITTER_NAME} <${GIT_COMMITTER_EMAIL}>
 description: "Visualizador simples de bancos SQLite"
 vendor: "liteview"
-homepage: "https://wails.io"
+homepage: "https://github.com/dienerld/liteview"
 license: "MIT"
 release: "1"
 

@@ -1,0 +1,85 @@
+name: Release
+
+# Builds the Linux packages (.deb, .rpm, Arch .pkg.tar.zst).
+# - Push a tag like v0.1.0 -> builds and publishes a GitHub Release with the packages.
+# - Manual run (workflow_dispatch) -> builds and uploads the packages as workflow artifacts only.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed to create the release
+
+env:
+  WAILS_VERSION: v3.0.0-beta.26
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install system dependencies (GTK 4 + WebKitGTK 6.0)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libgtk-4-dev libwebkitgtk-6.0-dev
+
+      - name: Install the Wails CLI
+        run: go install "github.com/wailsapp/wails/v3/cmd/wails3@${WAILS_VERSION}"
+
+      - name: Run tests
+        run: |
+          go test ./internal/...
+          cd frontend && npm ci && npm test
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=0.0.0-dev" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build the app
+        run: wails3 build
+
+      - name: Package
+        env:
+          GOARCH: amd64
+          GIT_COMMITTER_NAME: ${{ github.actor }}
+          GIT_COMMITTER_EMAIL: ${{ github.actor }}@users.noreply.github.com
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          sed -i "s/^version: .*/version: \"${VERSION}\"/" build/linux/nfpm/nfpm.yaml
+          for fmt in deb rpm archlinux; do
+            wails3 tool package -name liteview -format "$fmt" -config ./build/linux/nfpm/nfpm.yaml -out bin
+          done
+          mkdir -p dist
+          cp bin/liteview.deb "dist/liteview_${VERSION}_amd64.deb"
+          cp bin/liteview.rpm "dist/liteview-${VERSION}-1.x86_64.rpm"
+          cp bin/liteview.pkg.tar.zst "dist/liteview-${VERSION}-1-x86_64.pkg.tar.zst"
+          ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: liteview-linux-packages
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" dist/* --title "Liteview ${GITHUB_REF_NAME}" --generate-notes
