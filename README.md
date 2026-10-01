@@ -1,59 +1,47 @@
-# Welcome to Your New Wails3 Project!
+# SQLite Viewer
 
-Congratulations on generating your Wails3 application! This README will guide you through the next steps to get your project up and running.
+App desktop simples para visualizar e editar bancos SQLite, feito com Wails v3 (Go) + Vue 3 + shadcn-vue.
 
-## Getting Started
+## O que faz (v1)
 
-1. Navigate to your project directory in the terminal.
+- Lista tabelas e views; mostra a estrutura (colunas, PK, chaves estrangeiras de saída e de entrada).
+- Navega pelos dados com paginação, ordenação e filtro de texto (tudo no backend).
+- Segue relacionamentos: valores de FK são links, e cada registro mostra "Referenciado por" com a contagem de registros que apontam para ele.
+- Insere, edita e exclui registros por um formulário em painel lateral, com erros de constraint exibidos no campo certo.
+- Um banco por vez, com lista de recentes, reabertura do último banco e abertura por linha de comando.
 
-2. To run your application in development mode, use the following command:
+Fora do v1: editor SQL, diagrama ER, edição inline, múltiplos bancos, edição de BLOB.
 
-   ```
-   wails3 dev
-   ```
+## Requisitos
 
-   This will start your application and enable hot-reloading for both frontend and backend changes.
+- Go ≥ 1.24, Node.js + npm
+- CLI do Wails v3: `go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.26`
+- Linux: `gcc`, `gtk4` e `webkitgtk-6.0` (confira com `wails3 doctor`)
 
-3. To build your application for production, use:
+## Uso
 
-   ```
-   wails3 build
-   ```
+```
+wails3 dev                     # desenvolvimento (hot reload)
+wails3 build                   # gera bin/sqliteviewer
+bin/sqliteviewer [arquivo.db]  # abre direto um banco
+```
 
-   This will create a production-ready executable in the `build` directory.
+Banco de exemplo para testes manuais:
 
-## Exploring Wails3 Features
+```
+python3 -c "import sqlite3; sqlite3.connect('testdata/sample.db').executescript(open('testdata/seed.sql').read())"
+```
 
-Now that you have your project set up, it's time to explore the features that Wails3 offers:
+## Testes
 
-1. **Check out the examples**: The best way to learn is by example. Visit the `examples` directory in the `v3/examples` directory to see various sample applications.
+```
+go test ./internal/...
+cd frontend && npm test
+```
 
-2. **Run an example**: To run any of the examples, navigate to the example's directory and use:
+## Estrutura
 
-   ```
-   go run .
-   ```
-
-   Note: Some examples may be under development during the alpha phase.
-
-3. **Explore the documentation**: Visit the [Wails3 documentation](https://v3.wails.io/) for in-depth guides and API references.
-
-4. **Join the community**: Have questions or want to share your progress? Join the [Wails Discord](https://discord.gg/JDdSxwjhGf) or visit the [Wails discussions on GitHub](https://github.com/wailsapp/wails/discussions).
-
-## Project Structure
-
-Take a moment to familiarize yourself with your project structure:
-
-- `frontend/`: Contains your frontend code (HTML, CSS, JavaScript/TypeScript)
-- `main.go`: The entry point of your Go backend
-- `app.go`: Define your application structure and methods here
-- `wails.json`: Configuration file for your Wails project
-
-## Next Steps
-
-1. Modify the frontend in the `frontend/` directory to create your desired UI.
-2. Add backend functionality in `main.go`.
-3. Use `wails3 dev` to see your changes in real-time.
-4. When ready, build your application with `wails3 build`.
-
-Happy coding with Wails3! If you encounter any issues or have questions, don't hesitate to consult the documentation or reach out to the Wails community.
+- `internal/db`, `internal/schema`, `internal/rows`, `internal/recents`: backend em Go, sem dependência do Wails.
+- `internal/viewer`: o único service do Wails; seus métodos públicos viram os bindings do frontend.
+- `frontend/`: Vue 3 + TypeScript; `src/lib/api.ts` é o único arquivo que importa os bindings gerados.
+- `docs/superpowers/`: spec e plano de implementação.

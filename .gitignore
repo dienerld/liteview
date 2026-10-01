@@ -11,3 +11,6 @@ build/android/overlay.json
 build/android/gen/
 testdata/sample.db
 .superpowers/
+
+# vitest artifacts
+frontend/.vitest/
