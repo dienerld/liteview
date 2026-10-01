@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"sqliteviewer/internal/recents"
+	"liteview/internal/recents"
 )
 
 func newStore(t *testing.T) (*recents.Store, string) {

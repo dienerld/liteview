@@ -5,11 +5,11 @@
 	"info": {
 		"0000": {
 			"ProductVersion": "0.0.1",
-			"CompanyName": "sqliteviewer",
+			"CompanyName": "liteview",
 			"FileDescription": "Visualizador simples de bancos SQLite",
-			"LegalCopyright": "(c) 2025, sqliteviewer",
-			"ProductName": "SQLite Viewer",
-			"Comments": "SQLite Viewer"
+			"LegalCopyright": "(c) 2025, liteview",
+			"ProductName": "Liteview",
+			"Comments": "Liteview"
 		}
 	}
 }

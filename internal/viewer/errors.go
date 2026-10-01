@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"sqliteviewer/internal/rows"
+	"liteview/internal/rows"
 )
 
 // MarshalError makes constraint violations reach the frontend as structured data

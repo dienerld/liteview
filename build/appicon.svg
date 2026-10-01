@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B3B5C"/>
+      <stop offset="1" stop-color="#0E8F95"/>
+    </linearGradient>
+    <clipPath id="card">
+      <rect x="152" y="196" width="640" height="600" rx="64"/>
+    </clipPath>
+  </defs>
+
+  <!-- app tile -->
+  <rect width="1024" height="1024" rx="228" fill="url(#bg)"/>
+
+  <!-- table card -->
+  <rect x="152" y="196" width="640" height="600" rx="64" fill="#F8FAFC"/>
+  <g clip-path="url(#card)">
+    <rect x="152" y="196" width="640" height="128" fill="#38BDF8"/>
+    <rect x="152" y="444" width="640" height="120" fill="#CCFBF1"/>
+    <rect x="152" y="320" width="640" height="8" fill="#94A3B8" opacity="0.55"/>
+    <rect x="152" y="440" width="640" height="6" fill="#CBD5E1"/>
+    <rect x="152" y="564" width="640" height="6" fill="#CBD5E1"/>
+    <rect x="152" y="684" width="640" height="6" fill="#CBD5E1"/>
+    <rect x="388" y="196" width="8" height="600" fill="#CBD5E1"/>
+  </g>
+
+  <!-- header labels -->
+  <rect x="204" y="236" width="132" height="44" rx="22" fill="#FFFFFF"/>
+  <rect x="440" y="236" width="196" height="44" rx="22" fill="#FFFFFF" opacity="0.85"/>
+
+  <!-- cells -->
+  <rect x="204" y="364" width="96" height="36" rx="18" fill="#94A3B8"/>
+  <rect x="440" y="364" width="236" height="36" rx="18" fill="#CBD5E1"/>
+  <rect x="204" y="486" width="120" height="36" rx="18" fill="#0F766E"/>
+  <rect x="440" y="486" width="180" height="36" rx="18" fill="#0F766E"/>
+  <rect x="204" y="608" width="84" height="36" rx="18" fill="#94A3B8"/>
+  <rect x="440" y="608" width="260" height="36" rx="18" fill="#CBD5E1"/>
+  <rect x="204" y="728" width="108" height="36" rx="18" fill="#94A3B8"/>
+  <rect x="440" y="728" width="150" height="36" rx="18" fill="#CBD5E1"/>
+
+  <!-- lens -->
+  <circle cx="676" cy="612" r="150" fill="#FFFFFF" fill-opacity="0.16"/>
+  <line x1="786" y1="722" x2="876" y2="812" stroke="#FBBF24" stroke-width="72" stroke-linecap="round"/>
+  <circle cx="676" cy="612" r="150" fill="none" stroke="#FBBF24" stroke-width="56"/>
+</svg>

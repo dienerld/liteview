@@ -21,57 +21,57 @@ import * as rows$0 from "../rows/models.js";
 import * as schema$0 from "../schema/models.js";
 
 export function Close(): $CancellablePromise<void> {
-    return $Call.ByID(1460213787);
+    return $Call.ByID(3140294920);
 }
 
 export function CurrentDB(): $CancellablePromise<db$0.Info | null> {
-    return $Call.ByID(1424530160);
+    return $Call.ByID(1049149303);
 }
 
 export function DeleteRow(table: string, key: { [_ in string]?: any } | null): $CancellablePromise<void> {
-    return $Call.ByID(3677591054, table, key);
+    return $Call.ByID(819869261, table, key);
 }
 
 export function ForgetRecent(path: string): $CancellablePromise<void> {
-    return $Call.ByID(1248125967, path);
+    return $Call.ByID(4187606686, path);
 }
 
 export function GetTable(name: string): $CancellablePromise<schema$0.TableSchema | null> {
-    return $Call.ByID(3412349761, name);
+    return $Call.ByID(4117536372, name);
 }
 
 export function InitialDB(): $CancellablePromise<db$0.Info | null> {
-    return $Call.ByID(3009266349);
+    return $Call.ByID(2913195810);
 }
 
 export function InsertRow(table: string, values: { [_ in string]?: any } | null): $CancellablePromise<{ [_ in string]?: any } | null> {
-    return $Call.ByID(2409223380, table, values);
+    return $Call.ByID(369803471, table, values);
 }
 
 export function ListTables(): $CancellablePromise<schema$0.TableInfo[] | null> {
-    return $Call.ByID(3611912656);
+    return $Call.ByID(2404653529);
 }
 
 export function OpenDialog(): $CancellablePromise<db$0.Info | null> {
-    return $Call.ByID(3602376053);
+    return $Call.ByID(3766308804);
 }
 
 export function OpenPath(path: string): $CancellablePromise<db$0.Info | null> {
-    return $Call.ByID(282150858, path);
+    return $Call.ByID(1258196387, path);
 }
 
 export function QueryRows(q: rows$0.Query): $CancellablePromise<rows$0.Page | null> {
-    return $Call.ByID(2459427814, q);
+    return $Call.ByID(1597906693, q);
 }
 
 export function Recents(): $CancellablePromise<string[] | null> {
-    return $Call.ByID(1166794335);
+    return $Call.ByID(1007412548);
 }
 
 export function References(table: string, key: { [_ in string]?: any } | null): $CancellablePromise<rows$0.RefCount[] | null> {
-    return $Call.ByID(2836323043, table, key);
+    return $Call.ByID(3336967886, table, key);
 }
 
 export function UpdateRow(table: string, key: { [_ in string]?: any } | null, values: { [_ in string]?: any } | null): $CancellablePromise<void> {
-    return $Call.ByID(3175724056, table, key, values);
+    return $Call.ByID(1785379467, table, key, values);
 }

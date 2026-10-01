@@ -3,7 +3,7 @@
 #
 # The lines below are called `modelines`. See `:help modeline`
 
-name: "sqliteviewer"
+name: "liteview"
 arch: ${GOARCH}
 platform: "linux"
 version: "0.0.1"
@@ -11,18 +11,18 @@ section: "default"
 priority: "extra"
 maintainer: ${GIT_COMMITTER_NAME} <${GIT_COMMITTER_EMAIL}>
 description: "Visualizador simples de bancos SQLite"
-vendor: "sqliteviewer"
+vendor: "liteview"
 homepage: "https://wails.io"
 license: "MIT"
 release: "1"
 
 contents:
-  - src: "./bin/sqliteviewer"
-    dst: "/usr/local/bin/sqliteviewer"
+  - src: "./bin/liteview"
+    dst: "/usr/local/bin/liteview"
   - src: "./build/appicon.png"
-    dst: "/usr/share/icons/hicolor/128x128/apps/sqliteviewer.png"
-  - src: "./build/linux/sqliteviewer.desktop"
-    dst: "/usr/share/applications/sqliteviewer.desktop"
+    dst: "/usr/share/icons/hicolor/128x128/apps/liteview.png"
+  - src: "./build/linux/liteview.desktop"
+    dst: "/usr/share/applications/liteview.desktop"
 
 # Default dependencies for the GTK4 + WebKitGTK 6.0 stack (Ubuntu 24.04+ / Debian 13+)
 depends:

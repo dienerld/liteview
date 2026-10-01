@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=sqliteviewer
-Exec=sqliteviewer
-Icon=sqliteviewer
+Name=liteview
+Exec=liteview
+Icon=liteview
 Categories=Development;
 Terminal=false
 Keywords=wails

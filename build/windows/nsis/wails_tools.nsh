@@ -5,19 +5,19 @@
 !include "FileFunc.nsh"
 
 !ifndef INFO_PROJECTNAME
-    !define INFO_PROJECTNAME "sqliteviewer"
+    !define INFO_PROJECTNAME "liteview"
 !endif
 !ifndef INFO_COMPANYNAME
-    !define INFO_COMPANYNAME "sqliteviewer"
+    !define INFO_COMPANYNAME "liteview"
 !endif
 !ifndef INFO_PRODUCTNAME
-    !define INFO_PRODUCTNAME "SQLite Viewer"
+    !define INFO_PRODUCTNAME "Liteview"
 !endif
 !ifndef INFO_PRODUCTVERSION
     !define INFO_PRODUCTVERSION "0.0.1"
 !endif
 !ifndef INFO_COPYRIGHT
-    !define INFO_COPYRIGHT "(c) 2025, sqliteviewer"
+    !define INFO_COPYRIGHT "(c) 2025, liteview"
 !endif
 !ifndef PRODUCT_EXECUTABLE
     !define PRODUCT_EXECUTABLE "${INFO_PROJECTNAME}.exe"

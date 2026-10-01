@@ -1,4 +1,4 @@
-# SQLite Viewer
+# Liteview
 
 App desktop simples para visualizar e editar bancos SQLite, feito com Wails v3 (Go) + Vue 3 + shadcn-vue.
 
@@ -22,8 +22,8 @@ Fora do v1: editor SQL, diagrama ER, edição inline, múltiplos bancos, ediçã
 
 ```
 wails3 dev                     # desenvolvimento (hot reload)
-wails3 build                   # gera bin/sqliteviewer
-bin/sqliteviewer [arquivo.db]  # abre direto um banco
+wails3 build                   # gera bin/liteview
+bin/liteview [arquivo.db]      # abre direto um banco
 ```
 
 Banco de exemplo para testes manuais:

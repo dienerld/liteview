@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"sqliteviewer/internal/schema"
-	"sqliteviewer/internal/testdb"
+	"liteview/internal/schema"
+	"liteview/internal/testdb"
 )
 
 const fixture = `

@@ -1,4 +1,4 @@
-import * as ViewerService from "../../bindings/sqliteviewer/internal/viewer/service";
+import * as ViewerService from "../../bindings/liteview/internal/viewer/service";
 import type { Cond, DbInfo, Page, RefCount, RowQuery, TableInfo, TableSchema, Values } from "./types";
 
 // Generated models are structurally identical to ./types (modulo nullable slices/maps);

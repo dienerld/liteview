@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"sqliteviewer/internal/rows"
+	"liteview/internal/rows"
 )
 
 func TestReferences_countsIncomingRows(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"sqliteviewer/internal/schema"
+	"liteview/internal/schema"
 )
 
 const maxSafeInt = int64(1) << 53

@@ -5,10 +5,10 @@ import (
 	"errors"
 	"sync"
 
-	appdb "sqliteviewer/internal/db"
-	"sqliteviewer/internal/recents"
-	"sqliteviewer/internal/rows"
-	"sqliteviewer/internal/schema"
+	appdb "liteview/internal/db"
+	"liteview/internal/recents"
+	"liteview/internal/rows"
+	"liteview/internal/schema"
 )
 
 var ErrNoDatabase = errors.New("nenhum banco aberto")

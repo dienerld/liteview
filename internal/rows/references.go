@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"sqliteviewer/internal/schema"
+	"liteview/internal/schema"
 )
 
 type RefCount struct {

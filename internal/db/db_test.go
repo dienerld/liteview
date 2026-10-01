@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"sqliteviewer/internal/db"
+	"liteview/internal/db"
 )
 
 func makeDB(t *testing.T, path string) {

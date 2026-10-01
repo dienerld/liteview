@@ -8,14 +8,17 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 
-	"sqliteviewer/internal/recents"
-	"sqliteviewer/internal/viewer"
+	"liteview/internal/recents"
+	"liteview/internal/viewer"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
 
-// cliPath returns the first argument that is not a flag, e.g. `sqliteviewer my.db`.
+//go:embed build/appicon.png
+var appIcon []byte
+
+// cliPath returns the first argument that is not a flag, e.g. `liteview my.db`.
 func cliPath(args []string) string {
 	for _, a := range args {
 		if !strings.HasPrefix(a, "-") {
@@ -45,8 +48,9 @@ func main() {
 	})
 
 	app = application.New(application.Options{
-		Name:         "SQLite Viewer",
+		Name:         "Liteview",
 		Description:  "Visualizador simples de bancos SQLite",
+		Icon:         appIcon,
 		Services:     []application.Service{application.NewService(svc)},
 		MarshalError: viewer.MarshalError,
 		Assets: application.AssetOptions{
@@ -55,10 +59,11 @@ func main() {
 	})
 
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:  "SQLite Viewer",
+		Title:  "Liteview",
 		Width:  1280,
 		Height: 800,
 		URL:    "/",
+		Linux:  application.LinuxWindow{Icon: appIcon},
 	})
 
 	if err := app.Run(); err != nil {

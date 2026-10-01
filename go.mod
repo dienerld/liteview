@@ -1,4 +1,4 @@
-module sqliteviewer
+module liteview
 
 go 1.26.0
 

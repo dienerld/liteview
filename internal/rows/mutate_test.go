@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"sqliteviewer/internal/rows"
-	"sqliteviewer/internal/schema"
+	"liteview/internal/rows"
+	"liteview/internal/schema"
 )
 
 func TestInsert_returnsKeyAndAppliesDefaults(t *testing.T) {

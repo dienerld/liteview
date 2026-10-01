@@ -21,7 +21,7 @@ func DefaultPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(dir, "sqliteviewer", "recents.json"), nil
+	return filepath.Join(dir, "liteview", "recents.json"), nil
 }
 
 func (s *Store) List() []string {

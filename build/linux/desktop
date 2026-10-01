@@ -1,13 +1,13 @@
 [Desktop Entry]
 Version=1.0
-Name=SQLite Viewer
+Name=Liteview
 Comment=Visualizador simples de bancos SQLite
 # The Exec line includes %u to pass the URL to the application
-Exec=/usr/local/bin/sqliteviewer %u
+Exec=/usr/local/bin/liteview %u
 Terminal=false
 Type=Application
-Icon=sqliteviewer
+Icon=liteview
 Categories=Utility;
-StartupWMClass=sqliteviewer
+StartupWMClass=liteview
 
  

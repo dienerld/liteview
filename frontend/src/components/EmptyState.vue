@@ -7,7 +7,7 @@ const store = useViewer()
 <template>
   <div class="flex h-full flex-col items-center justify-center gap-6 p-8">
     <div class="text-center">
-      <h1 class="text-2xl font-semibold">SQLite Viewer</h1>
+      <h1 class="text-2xl font-semibold">Liteview</h1>
       <p class="text-muted-foreground mt-1">Abra um arquivo de banco para começar.</p>
     </div>
     <Button @click="store.openDialog()">Abrir banco…</Button>

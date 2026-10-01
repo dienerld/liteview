@@ -8,27 +8,27 @@
         AllowPromptForPassword="false">
     </Settings>
     <Installer
-        Path="sqliteviewer"
+        Path="liteview"
         Arguments=""
-        InstallLocation="C:\Program Files\sqliteviewer\SQLite Viewer">
+        InstallLocation="C:\Program Files\liteview\Liteview">
     </Installer>
     <PackageInformation
-        PackageName="SQLite Viewer"
-        PackageDisplayName="SQLite Viewer"
-        PublisherName="CN=sqliteviewer"
-        PublisherDisplayName="sqliteviewer"
+        PackageName="Liteview"
+        PackageDisplayName="Liteview"
+        PublisherName="CN=liteview"
+        PublisherDisplayName="liteview"
         Version="0.1.0.0"
-        PackageDescription="A sqliteviewer application">
+        PackageDescription="A liteview application">
         <Capabilities>
             <Capability Name="runFullTrust" />
             
         </Capabilities>
         <Applications>
             <Application
-                Id="com.example.sqliteviewer"
-                Description="A sqliteviewer application"
-                DisplayName="SQLite Viewer"
-                ExecutableName="sqliteviewer"
+                Id="com.example.liteview"
+                Description="A liteview application"
+                DisplayName="Liteview"
+                ExecutableName="liteview"
                 EntryPoint="Windows.FullTrustApplication">
                 
             </Application>
@@ -41,13 +41,13 @@
         </Dependencies>
         <Properties>
             <Framework>false</Framework>
-            <DisplayName>SQLite Viewer</DisplayName>
-            <PublisherDisplayName>sqliteviewer</PublisherDisplayName>
-            <Description>A sqliteviewer application</Description>
+            <DisplayName>Liteview</DisplayName>
+            <PublisherDisplayName>liteview</PublisherDisplayName>
+            <Description>A liteview application</Description>
             <Logo>Assets\AppIcon.png</Logo>
         </Properties>
     </PackageInformation>
-    <SaveLocation PackagePath="sqliteviewer.msix" />
+    <SaveLocation PackagePath="liteview.msix" />
     <PackageIntegrity>
         <CertificatePath></CertificatePath>
     </PackageIntegrity>

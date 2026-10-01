@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"sqliteviewer/internal/schema"
+	"liteview/internal/schema"
 )
 
 var ErrReadOnly = errors.New("esta tabela é somente leitura")

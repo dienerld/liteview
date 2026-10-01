@@ -9,9 +9,9 @@ import (
 
 	_ "modernc.org/sqlite"
 
-	"sqliteviewer/internal/recents"
-	"sqliteviewer/internal/rows"
-	"sqliteviewer/internal/viewer"
+	"liteview/internal/recents"
+	"liteview/internal/rows"
+	"liteview/internal/viewer"
 )
 
 func makeDB(t *testing.T) string {
