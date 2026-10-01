@@ -30,6 +30,20 @@ const columns = computed<ColumnDef<Row>[]>(() =>
   })),
 )
 
+function ariaSort(column: string): "ascending" | "descending" | "none" {
+  if (props.orderBy !== column) return "none"
+  return props.desc ? "descending" : "ascending"
+}
+
+// Only react to keys pressed on the row itself, not on buttons inside it.
+function onRowKey(e: KeyboardEvent, row: Row) {
+  if (e.target !== e.currentTarget) return
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault()
+    emit("select", row)
+  }
+}
+
 const table = useVueTable({
   get data() { return props.rows },
   get columns() { return columns.value },
@@ -43,13 +57,15 @@ const table = useVueTable({
   <Table>
     <TableHeader>
       <TableRow v-for="hg in table.getHeaderGroups()" :key="hg.id">
-        <TableHead v-for="header in hg.headers" :key="header.id">
+        <TableHead v-for="header in hg.headers" :key="header.id" :aria-sort="ariaSort(header.column.id)">
           <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
         </TableHead>
       </TableRow>
     </TableHeader>
     <TableBody>
-      <TableRow v-for="row in table.getRowModel().rows" :key="row.id" class="cursor-pointer" @click="emit('select', row.original)">
+      <TableRow v-for="row in table.getRowModel().rows" :key="row.id" tabindex="0"
+        class="focus-visible:ring-ring cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-inset"
+        @click="emit('select', row.original)" @keydown="onRowKey($event, row.original)">
         <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
           <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
         </TableCell>
